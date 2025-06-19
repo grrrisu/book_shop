@@ -11,6 +11,7 @@ defmodule BookShop.Application do
       BookShopWeb.Telemetry,
       {DNSCluster, query: Application.get_env(:book_shop, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: BookShop.PubSub},
+      BookShop.Customer.Server,
       BookShop.Store.Server,
       BookShopWeb.Endpoint
     ]
