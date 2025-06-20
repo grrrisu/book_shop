@@ -12,7 +12,7 @@ defmodule BookShop.Accounting.Server do
   end
 
   def init(:ok) do
-    {:ok, %{open: [], balance: 0}, {:continue, []}}
+    {:ok, %{open: %{}, balance: 0}, {:continue, []}}
   end
 
   def handle_continue(_continue_arg, state) do
@@ -33,7 +33,7 @@ defmodule BookShop.Accounting.Server do
     }
 
     broadcast_event({:invoice_created, invoice})
-    {:noreply, %{state | open: [invoice | open]}}
+    {:noreply, %{state | open: Map.put_new(open, order.order_id, invoice)}}
   end
 
   def handle_info(_event, state) do
@@ -45,4 +45,12 @@ defmodule BookShop.Accounting.Server do
   end
 
   # Command handlers
+
+  def handle_call({:incoming_payment, order_id, price}, _from, state) do
+    %{price: ^price} = Map.get(state.open, order_id)
+    broadcast_event({:payment_received, order_id})
+
+    {:reply, :ok,
+     %{state | balance: state.balance + price, open: Map.delete(state.open, order_id)}}
+  end
 end

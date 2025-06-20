@@ -2,6 +2,7 @@ defmodule BookShop.Customer.Server do
   use GenServer
 
   alias BookShop.Store
+  alias BookShop.Accounting
 
   import BookShop.Helper
 
@@ -24,9 +25,9 @@ defmodule BookShop.Customer.Server do
 
   # Event handler for incoming events
 
-  def handle_info({:books_shipped, %{books: books, customer: state}}, state) do
+  def handle_info({:books_shipped, %{books: books, customer: state} = parcel}, state) do
     Logger.info("#{state.name} received #{inspect(books)}")
-    # pay invoice
+    Accounting.pay_invoice(parcel.order_id, parcel.price)
     {:noreply, state}
   end
 
