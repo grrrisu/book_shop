@@ -1,7 +1,7 @@
 defmodule BookShop.Store.Server do
   use GenServer
 
-  alias Phoenix.PubSub
+  import BookShop.Helper
 
   require Logger
 
@@ -32,15 +32,14 @@ defmodule BookShop.Store.Server do
   end
 
   def handle_continue(_continue_arg, state) do
-    PubSub.subscribe(BookShop.PubSub, "store:events")
+    subscribe()
     Logger.info("BookShop.Store.Server started and subscribed to store:events")
     {:noreply, state}
   end
 
   # Event handler for incoming events
 
-  def handle_info(event, state) do
-    dbg(event)
+  def handle_info(_event, state) do
     {:noreply, state}
   end
 
@@ -51,14 +50,9 @@ defmodule BookShop.Store.Server do
   end
 
   def handle_cast({:place_order, books, customer}, state) do
-    Logger.info("order validated for customer #{customer.name}}")
+    Logger.info("order validated for customer #{customer.name}")
     :ok = broadcast_event({:order_placed, books, customer})
 
     {:noreply, state}
-  end
-
-  def broadcast_event(event) do
-    dbg(event)
-    :ok = PubSub.broadcast(BookShop.PubSub, "store:events", event)
   end
 end

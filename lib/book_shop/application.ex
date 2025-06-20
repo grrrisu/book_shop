@@ -13,6 +13,7 @@ defmodule BookShop.Application do
       {Phoenix.PubSub, name: BookShop.PubSub},
       BookShop.Customer.Server,
       BookShop.Store.Server,
+      BookShop.Logistics.Server,
       BookShopWeb.Endpoint
     ]
 
