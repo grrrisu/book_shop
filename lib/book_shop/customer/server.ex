@@ -8,12 +8,12 @@ defmodule BookShop.Customer.Server do
 
   require Logger
 
-  def start_link(_) do
-    GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
+  def start_link(name) do
+    GenServer.start_link(__MODULE__, name)
   end
 
-  def init(:ok) do
-    {:ok, %{name: "Jane", billing_address: "my company", shipping_address: "my home"},
+  def init(name) do
+    {:ok, %{name: name, billing_address: "my company", shipping_address: "my home"},
      {:continue, []}}
   end
 

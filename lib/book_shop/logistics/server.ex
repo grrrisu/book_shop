@@ -37,7 +37,7 @@ defmodule BookShop.Logistics.Server do
       {:noreply, %{state | inventory: inventory, ready: ready}}
     else
       missing ->
-        missing |> Enum.map(& &1.isbn) |> Supplier.order(10)
+        missing |> Supplier.order(10)
         Process.send_after(self(), event, 1_000)
         {:noreply, state}
     end
@@ -67,7 +67,7 @@ defmodule BookShop.Logistics.Server do
 
     inventory =
       Enum.reduce(books, state.inventory, fn book, inv ->
-        Map.update!(inv, book.isbn, &(&1 + quantity))
+        Map.update!(inv, book, &(&1 + quantity))
       end)
 
     {:noreply, %{state | inventory: inventory}}
