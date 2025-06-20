@@ -14,6 +14,7 @@ defmodule BookShop.Application do
       BookShop.Customer.Server,
       BookShop.Store.Server,
       BookShop.Logistics.Server,
+      BookShop.Accounting.Server,
       BookShopWeb.Endpoint
     ]
 

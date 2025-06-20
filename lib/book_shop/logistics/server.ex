@@ -12,11 +12,11 @@ defmodule BookShop.Logistics.Server do
   end
 
   def init(:ok) do
-    {:ok, %{inventory: []}, {:continue, []}}
+    {:ok, %{inventory: [], ready: %{}}, {:continue, []}}
   end
 
   def handle_continue(_continue_arg, state) do
-    inventory = Store.list_books() |> Enum.reduce(%{}, &Map.put_new(&2, &1, 5))
+    inventory = Store.list_books() |> Enum.reduce(%{}, &Map.put_new(&2, &1.isbn, 5))
     subscribe()
     Logger.info("BookShop.Logistics.Server started and subscribed to store:events")
     {:noreply, %{state | inventory: inventory}}
@@ -24,26 +24,37 @@ defmodule BookShop.Logistics.Server do
 
   # Event handler for incoming events
 
-  def handle_info({:order_placed, books, customer}, %{inventory: inventory} = state) do
+  def handle_info(
+        {:order_placed, %{order_id: order_id, books: books}} = event,
+        state
+      ) do
     Logger.info("Logistics received order #{inspect(books)}")
 
-    inventory =
-      case check_inventory(books, inventory) do
-        [] ->
-          Enum.reduce(books, inventory, fn book, inventory ->
-            Map.update!(inventory, book, &(&1 - 1))
-          end)
+    with [] <- check_inventory(books, state.inventory),
+         inventory <- adjust_inventory(books, state.inventory),
+         ready <- Map.put_new(state.ready, order_id, books) do
+      {:noreply, %{state | inventory: inventory, ready: ready}}
+    else
+      _missing ->
+        # restock with supplier
+        Process.send_after(self(), event, 1_000)
+        {:noreply, state}
+    end
+  end
 
-          :ok = broadcast_event({:books_shipped, books, customer})
+  def handle_info({:invoice_created, %{order_id: order_id} = invoice}, %{ready: ready} = state) do
+    ready =
+      case Map.get(state.ready, order_id) do
+        # invoice created before we received order
+        nil ->
+          ready
 
-        _missing ->
-          # order new missing
-          # replace order with delay
-          inventory
+        books ->
+          :ok = broadcast_event({:books_shipped, Map.merge(invoice, %{books: books})})
+          Map.delete(ready, order_id)
       end
 
-    # ship books
-    {:noreply, %{state | inventory: inventory}}
+    {:noreply, %{state | ready: ready}}
   end
 
   def handle_info(_event, state) do
@@ -52,10 +63,16 @@ defmodule BookShop.Logistics.Server do
 
   defp check_inventory(books, inventory) do
     Enum.reduce(books, [], fn book, missing ->
-      case Map.get(inventory, book) > 0 do
+      case Map.get(inventory, book.isbn) > 0 do
         true -> missing
-        false -> [book | missing]
+        false -> [book.isbn | missing]
       end
+    end)
+  end
+
+  defp adjust_inventory(books, inventory) do
+    Enum.reduce(books, inventory, fn book, inventory ->
+      Map.update!(inventory, book.isbn, &(&1 - 1))
     end)
   end
 

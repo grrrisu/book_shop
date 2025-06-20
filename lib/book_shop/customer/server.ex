@@ -24,8 +24,9 @@ defmodule BookShop.Customer.Server do
 
   # Event handler for incoming events
 
-  def handle_info({:books_shipped, books, state}, state) do
+  def handle_info({:books_shipped, %{books: books, customer: state}}, state) do
     Logger.info("#{state.name} received #{inspect(books)}")
+    # pay invoice
     {:noreply, state}
   end
 
