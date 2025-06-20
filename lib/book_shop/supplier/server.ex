@@ -5,12 +5,16 @@ defmodule BookShop.Supplier.Server do
 
   require Logger
 
+  alias BookShop.Store.Data
+
+  @discount 0.5
+
   def start_link(_) do
     GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
   def init(:ok) do
-    {:ok, %{}, {:continue, []}}
+    {:ok, Data.data(), {:continue, []}}
   end
 
   def handle_continue(_continue_arg, state) do
@@ -26,4 +30,22 @@ defmodule BookShop.Supplier.Server do
   end
 
   # Command handlers
+
+  def handle_cast({:order, books, quantity}, state) do
+    broadcast_event(
+      {:supplier_shipped,
+       %{books: books, quantity: quantity, price: total_price(books, quantity, state)}}
+    )
+
+    {:noreply, state}
+  end
+
+  defp total_price(books, quantity, state) do
+    books
+    |> Enum.map(&(Enum.find(state, fn book -> &1 == book.isbn end) |> Map.get(:price)))
+    |> Enum.sum()
+    |> Kernel.*(quantity)
+    |> Kernel.*(@discount)
+    |> round()
+  end
 end

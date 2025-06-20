@@ -1,6 +1,7 @@
 defmodule BookShop.Logistics.Server do
   use GenServer
 
+  alias BookShop.Supplier
   alias BookShop.Store
 
   import BookShop.Helper
@@ -35,18 +36,22 @@ defmodule BookShop.Logistics.Server do
          ready <- Map.put_new(state.ready, order_id, books) do
       {:noreply, %{state | inventory: inventory, ready: ready}}
     else
-      _missing ->
-        # restock with supplier
+      missing ->
+        missing |> Enum.map(& &1.isbn) |> Supplier.order(10)
         Process.send_after(self(), event, 1_000)
         {:noreply, state}
     end
   end
 
-  def handle_info({:invoice_created, %{order_id: order_id} = invoice}, %{ready: ready} = state) do
+  def handle_info(
+        {:invoice_created, %{order_id: order_id} = invoice} = event,
+        %{ready: ready} = state
+      ) do
     ready =
       case Map.get(state.ready, order_id) do
-        # invoice created before we received order
         nil ->
+          Logger.info("Logistics received invoice for order #{order_id} but order not ready yet")
+          Process.send_after(self(), event, 200)
           ready
 
         books ->
@@ -55,6 +60,17 @@ defmodule BookShop.Logistics.Server do
       end
 
     {:noreply, %{state | ready: ready}}
+  end
+
+  def handle_info({:supplier_shipped, %{books: books, quantity: quantity}}, state) do
+    Logger.info("Logistics received shipment of #{quantity} copies of #{inspect(books)}")
+
+    inventory =
+      Enum.reduce(books, state.inventory, fn book, inv ->
+        Map.update!(inv, book.isbn, &(&1 + quantity))
+      end)
+
+    {:noreply, %{state | inventory: inventory}}
   end
 
   def handle_info(_event, state) do

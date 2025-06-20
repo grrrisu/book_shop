@@ -19,7 +19,7 @@ defmodule BookShop.Customer.Server do
 
   def handle_continue(_continue_arg, state) do
     subscribe()
-    Logger.info("BookShop.Store.Customer started and subscribed to store:events")
+    Logger.info("BookShop.Customer.Server started and subscribed to store:events")
     {:noreply, state}
   end
 
@@ -31,6 +31,12 @@ defmodule BookShop.Customer.Server do
     {:noreply, state}
   end
 
+  def handle_info({:newsletter_sent, _marketing_text, state}, state) do
+    Logger.info("#{state.name} received newsletter, must buy more books!")
+    handle_buy_books(state)
+    {:noreply, state}
+  end
+
   def handle_info(_event, state) do
     {:noreply, state}
   end
@@ -38,11 +44,14 @@ defmodule BookShop.Customer.Server do
   # Command handlers
 
   def handle_cast(:buy_books, state) do
+    handle_buy_books(state)
+    {:noreply, state}
+  end
+
+  defp handle_buy_books(customer) do
     Store.list_books()
     |> Enum.shuffle()
     |> Enum.take(2)
-    |> Store.place_order(state)
-
-    {:noreply, state}
+    |> Store.place_order(customer)
   end
 end

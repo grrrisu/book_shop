@@ -36,6 +36,10 @@ defmodule BookShop.Accounting.Server do
     {:noreply, %{state | open: Map.put_new(open, order.order_id, invoice)}}
   end
 
+  def handle_info({:supplier_shipped, %{price: price}}, state) do
+    {:noreply, %{state | balance: state.balance - price}}
+  end
+
   def handle_info(_event, state) do
     {:noreply, state}
   end
@@ -47,8 +51,8 @@ defmodule BookShop.Accounting.Server do
   # Command handlers
 
   def handle_call({:incoming_payment, order_id, price}, _from, state) do
-    %{price: ^price} = Map.get(state.open, order_id)
-    broadcast_event({:payment_received, order_id})
+    %{price: ^price, customer: customer} = Map.get(state.open, order_id)
+    broadcast_event({:payment_received, customer})
 
     {:reply, :ok,
      %{state | balance: state.balance + price, open: Map.delete(state.open, order_id)}}
