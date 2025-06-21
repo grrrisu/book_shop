@@ -8,4 +8,8 @@ defmodule BookShop.Accounting do
   def pay_invoice(order_id, price) do
     GenServer.call(Server, {:incoming_payment, order_id, price})
   end
+
+  def get_balance() do
+    GenServer.call(Server, :get_balance)
+  end
 end

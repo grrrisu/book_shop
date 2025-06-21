@@ -1,3 +1,4 @@
+```mermaid
 flowchart TB
     %% Actors/Personas
     Customer[👤 Customer]
@@ -95,3 +96,4 @@ flowchart TB
     class Store,Logistics,Accounting,Marketing,SupplierCtx aggregate
     class CheckInventory,AutoReorder,TaxCalculation,NewsletterPolicy policy
     class Customer,Supplier actor
+```

@@ -38,8 +38,16 @@ defmodule BookShop.Store.Server do
     order_id = System.unique_integer([:positive])
 
     :ok =
-      broadcast_event({:order_placed, %{order_id: order_id, books: books, customer: customer}})
+      broadcast_event(
+        {:order_placed, %{order_id: order_id, books: book_data(books), customer: customer}}
+      )
 
     {:noreply, state}
+  end
+
+  defp book_data([%{isbn: _} | _] = books), do: books
+
+  defp book_data([isbn | _] = books) when is_binary(isbn) do
+    Enum.map(books, fn isbn -> Data.data() |> Enum.find(&(&1.isbn == isbn)) end)
   end
 end

@@ -2,13 +2,13 @@ defmodule BookShop.Store.Data do
   def data do
     [
       %{
-        name: "Elixir in Action",
-        price: 4500,
-        author: "Saša Jurić",
-        category: "Programming",
-        pages: 384,
-        isbn: "9781617295027",
-        image_url: "https://covers.openlibrary.org/b/isbn/9781617295027-L.jpg"
+        name: "Utopia",
+        price: 1500,
+        author: "Thomas More",
+        category: "Philosophical Fiction",
+        pages: 200,
+        isbn: "9798682441006",
+        image_url: "https://prodimage.images-bn.com/pimages/9798682441006_p0_v1_s1200x630.jpg"
       },
       %{
         name: "Alice in Wonderland",
@@ -45,6 +45,15 @@ defmodule BookShop.Store.Data do
         pages: 271,
         isbn: "9780441569595",
         image_url: "https://covers.openlibrary.org/b/isbn/9780441569595-L.jpg"
+      },
+      %{
+        name: "Elixir in Action",
+        price: 4500,
+        author: "Saša Jurić",
+        category: "Programming",
+        pages: 384,
+        isbn: "9781617295027",
+        image_url: "https://covers.openlibrary.org/b/isbn/9781617295027-L.jpg"
       },
       %{
         name: "Gödel, Escher, Bach: An Eternal Golden Braid",
@@ -134,7 +143,8 @@ defmodule BookShop.Store.Data do
         category: "Humor/Satire",
         pages: 256,
         isbn: "9780000000000",
-        image_url: "https://via.placeholder.com/300x450/6366f1/ffffff?text=How+to+Rule+the+World!"
+        image_url:
+          "https://prod-images.tcm.com/Master-Profile-Images/thegreatdictator1940.76858.jpg"
       },
       %{
         name: "Dracula",

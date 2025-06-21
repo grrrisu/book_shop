@@ -50,6 +50,10 @@ defmodule BookShop.Accounting.Server do
 
   # Command handlers
 
+  def handle_call(:get_balance, _from, state) do
+    {:reply, state.balance, state}
+  end
+
   def handle_call({:incoming_payment, order_id, price}, _from, state) do
     %{price: ^price, customer: customer} = Map.get(state.open, order_id)
     broadcast_event({:payment_received, customer})

@@ -13,7 +13,6 @@ defmodule BookShop.Application do
       {Phoenix.PubSub, name: BookShop.PubSub},
       {DynamicSupervisor, name: BookShop.CustomerSupervisor, strategy: :one_for_one},
       BookShop.Supplier.Server,
-      BookShop.Customer.Server,
       BookShop.Store.Server,
       BookShop.Logistics.Server,
       BookShop.Accounting.Server,

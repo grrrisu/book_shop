@@ -50,7 +50,10 @@ defmodule BookShop.Logistics.Server do
     ready =
       case Map.get(state.ready, order_id) do
         nil ->
-          Logger.info("Logistics received invoice for order #{order_id} but order not ready yet")
+          Logger.info(
+            "Logistics received invoice for order #{order_id} but order's not yet ready"
+          )
+
           Process.send_after(self(), event, 200)
           ready
 
