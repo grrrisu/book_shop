@@ -17,7 +17,12 @@ defmodule BookShopWeb.Router do
   scope "/", BookShopWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    live "/", Index, :index
+    live "/store", Store, :index
+    # live "/logistics", Logistics, :index
+    # live "/accounting", Accounting, :index
+    # live "/mareketing", Marketing, :index
+    # live "/monitoring", Monitoring, :index
   end
 
   # Other scopes may use custom stacks.

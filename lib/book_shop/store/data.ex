@@ -134,7 +134,8 @@ defmodule BookShop.Store.Data do
         category: "Humor/Satire",
         pages: 256,
         isbn: "9780000000000",
-        image_url: "https://via.placeholder.com/300x450/6366f1/ffffff?text=How+to+Rule+the+World!"
+        image_url:
+          "https://prod-images.tcm.com/Master-Profile-Images/thegreatdictator1940.76858.jpg"
       },
       %{
         name: "Dracula",
