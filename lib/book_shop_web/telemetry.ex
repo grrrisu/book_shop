@@ -11,7 +11,7 @@ defmodule BookShopWeb.Telemetry do
     children = [
       # Telemetry poller will execute the given period measurements
       # every 10_000ms. Learn more here: https://hexdocs.pm/telemetry_metrics
-      {:telemetry_poller, measurements: periodic_measurements(), period: 10_000}
+      {:telemetry_poller, measurements: periodic_measurements(), period: 2_000}
       # Add reporters as children of your supervision tree.
       # {Telemetry.Metrics.ConsoleReporter, metrics: metrics()}
     ]
@@ -56,7 +56,12 @@ defmodule BookShopWeb.Telemetry do
       summary("vm.memory.total", unit: {:byte, :kilobyte}),
       summary("vm.total_run_queue_lengths.total"),
       summary("vm.total_run_queue_lengths.cpu"),
-      summary("vm.total_run_queue_lengths.io")
+      summary("vm.total_run_queue_lengths.io"),
+
+      # Business Metrics
+      last_value("book_shop.logistics.stats.ready"),
+      last_value("book_shop.logistics.stats.inventory"),
+      last_value("book_shop.accounting.balance.sum")
     ]
   end
 
@@ -65,6 +70,30 @@ defmodule BookShopWeb.Telemetry do
       # A module, function and arguments to be invoked periodically.
       # This function must call :telemetry.execute/3 and a metric must be added above.
       # {BookShopWeb, :count_users, []}
+      {BookShopWeb.Telemetry, :read_logistics_stats, []},
+      {BookShopWeb.Telemetry, :read_balance, []}
     ]
+  end
+
+  # custom metrics
+
+  def read_logistics_stats do
+    stats = BookShop.Logistics.get_stats()
+
+    :telemetry.execute(
+      [:book_shop, :logistics, :stats],
+      %{ready: stats.ready, inventory: stats.inventory},
+      %{context: "logistics", time: DateTime.utc_now() |> DateTime.to_iso8601()}
+    )
+  end
+
+  def read_balance do
+    balance = BookShop.Accounting.get_balance()
+
+    :telemetry.execute(
+      [:book_shop, :accounting, :balance],
+      %{sum: balance},
+      %{context: "accounting", time: DateTime.utc_now() |> DateTime.to_iso8601()}
+    )
   end
 end

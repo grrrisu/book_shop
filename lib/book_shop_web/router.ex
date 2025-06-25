@@ -20,7 +20,7 @@ defmodule BookShopWeb.Router do
     live "/", Index, :index
     live "/store", Store, :index
     live "/statistics", Statistics, :index
-    # live "/monitoring", Monitoring, :index
+    live "/monitoring", Monitoring, :index
   end
 
   # Other scopes may use custom stacks.

@@ -1,6 +1,8 @@
 defmodule BookShopWeb.Statistics do
   use BookShopWeb, :live_view
 
+  import BookShopWeb.SharedComponents
+
   def mount(_params, _session, socket) do
     if connected?(socket) do
       BookShop.Helper.subscribe()
@@ -68,19 +70,6 @@ defmodule BookShopWeb.Statistics do
         </div>
       </div>
     </Layouts.app>
-    """
-  end
-
-  def stat(assigns) do
-    ~H"""
-    <div class="stat bg-base-300">
-      <div class="stat-figure text-secondary">
-        <.icon name={@icon} class="size-6" />
-      </div>
-      <div class="stat-title font-bold">{@title}</div>
-      <div class="stat-value text-right">{@number}</div>
-      <div class="stat-desc">event based calculation</div>
-    </div>
     """
   end
 end

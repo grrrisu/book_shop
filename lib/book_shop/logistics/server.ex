@@ -13,7 +13,7 @@ defmodule BookShop.Logistics.Server do
   end
 
   def init(:ok) do
-    {:ok, %{inventory: [], ready: %{}}, {:continue, []}}
+    {:ok, %{inventory: %{}, ready: %{}}, {:continue, []}}
   end
 
   def handle_continue(_continue_arg, state) do
@@ -96,4 +96,12 @@ defmodule BookShop.Logistics.Server do
   end
 
   # Command handlers
+
+  def handle_call(:get_stats, _from, state) do
+    {:reply,
+     %{
+       inventory: Enum.reduce(state.inventory, 0, fn {_, quantity}, sum -> sum + quantity end),
+       ready: Enum.count(state.ready)
+     }, state}
+  end
 end
