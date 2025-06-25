@@ -8,7 +8,6 @@ defmodule BookShop.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      BookShopWeb.Telemetry,
       {DNSCluster, query: Application.get_env(:book_shop, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: BookShop.PubSub},
       {DynamicSupervisor, name: BookShop.CustomerSupervisor, strategy: :one_for_one},
@@ -17,7 +16,8 @@ defmodule BookShop.Application do
       BookShop.Logistics.Server,
       BookShop.Accounting.Server,
       BookShop.Marketing.Server,
-      BookShopWeb.Endpoint
+      BookShopWeb.Endpoint,
+      BookShopWeb.Telemetry
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

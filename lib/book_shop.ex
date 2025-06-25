@@ -21,7 +21,7 @@ defmodule BookShop do
     end)
 
     # Stop the application
-    Process.sleep(10_000)
+    Process.sleep(60_000)
     Application.stop(:book_shop)
   end
 
