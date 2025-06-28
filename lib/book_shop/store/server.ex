@@ -4,6 +4,7 @@ defmodule BookShop.Store.Server do
   alias BookShop.Store.Data
 
   import BookShop.Helper
+  import BookShop.Tracing
 
   require Logger
 
@@ -34,15 +35,26 @@ defmodule BookShop.Store.Server do
   end
 
   def handle_cast({:place_order, books, customer}, state) do
-    Logger.info("order validated for customer #{customer.name}")
     order_id = System.unique_integer([:positive])
 
-    :ok =
-      broadcast_event(
-        {:order_placed, %{order_id: order_id, books: book_data(books), customer: customer}}
-      )
+    broadcast_event(
+      {:incoming_order, "Store",
+       %{order_id: order_id, books: book_data(books), customer: customer}}
+    )
+
+    trace_start(order_id, "Store", "place_order")
+    validate(books, customer)
+
+    broadcast_event(
+      {:order_placed, "Store", %{order_id: order_id, books: book_data(books), customer: customer}}
+    )
 
     {:noreply, state}
+  end
+
+  defp validate(_books, customer) do
+    Logger.info("order validated for customer #{customer.name}")
+    simulate_process()
   end
 
   defp book_data([%{isbn: _} | _] = books), do: books

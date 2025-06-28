@@ -5,8 +5,11 @@ defmodule BookShop.Logistics.Server do
   alias BookShop.Store
 
   import BookShop.Helper
+  import BookShop.Tracing
 
   require Logger
+
+  @starting_inventory 5
 
   def start_link(_) do
     GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
@@ -17,7 +20,9 @@ defmodule BookShop.Logistics.Server do
   end
 
   def handle_continue(_continue_arg, state) do
-    inventory = Store.list_books() |> Enum.reduce(%{}, &Map.put_new(&2, &1.isbn, 5))
+    inventory =
+      Store.list_books() |> Enum.reduce(%{}, &Map.put_new(&2, &1.isbn, @starting_inventory))
+
     subscribe()
     Logger.info("BookShop.Logistics.Server started and subscribed to store:events")
     {:noreply, %{state | inventory: inventory}}
@@ -25,22 +30,10 @@ defmodule BookShop.Logistics.Server do
 
   # Event handler for incoming events
 
-  def handle_info(
-        {:order_placed, %{order_id: order_id, books: books}} = event,
-        state
-      ) do
-    Logger.info("Logistics received order #{inspect(books)}")
-
-    with [] <- check_inventory(books, state.inventory),
-         inventory <- adjust_inventory(books, state.inventory),
-         ready <- Map.put_new(state.ready, order_id, books) do
-      {:noreply, %{state | inventory: inventory, ready: ready}}
-    else
-      missing ->
-        missing |> Supplier.order(10)
-        Process.send_after(self(), event, 1_000)
-        {:noreply, state}
-    end
+  def handle_info({:order_placed, %{order_id: order_id, books: books} = event}, state) do
+    trace(order_id, "Logistics", "handle_order_placed")
+    Logger.info("Logistics processing order #{order_id} for books: #{inspect(books)}")
+    {:noreply, handle_order_placed(event, state)}
   end
 
   def handle_info(
@@ -54,11 +47,20 @@ defmodule BookShop.Logistics.Server do
             "Logistics received invoice for order #{order_id} but order's not yet ready"
           )
 
-          Process.send_after(self(), event, 200)
+          trace(order_id, "Logistics", "waiting_for_books")
+
+          Process.send_after(
+            self(),
+            event,
+            Application.get_env(:book_shop, :process_time) || 1_000
+          )
+
           ready
 
         books ->
-          :ok = broadcast_event({:books_shipped, Map.merge(invoice, %{books: books})})
+          :ok =
+            broadcast_event({:books_shipped, "Logistics", Map.merge(invoice, %{books: books})})
+
           Map.delete(ready, order_id)
       end
 
@@ -80,7 +82,29 @@ defmodule BookShop.Logistics.Server do
     {:noreply, state}
   end
 
+  defp handle_order_placed(%{order_id: order_id, books: books} = event, state) do
+    with [] <- check_inventory(books, state.inventory),
+         inventory <- adjust_inventory(books, state.inventory),
+         ready <- Map.put_new(state.ready, order_id, books) do
+      %{state | inventory: inventory, ready: ready}
+    else
+      missing ->
+        missing |> Supplier.order(10)
+        trace(order_id, "Logistics", "order_missing_books")
+
+        Process.send_after(
+          self(),
+          {:order_placed, payload},
+          Application.get_env(:book_shop, :process_time) || 1_000
+        )
+
+        state
+    end
+  end
+
   defp check_inventory(books, inventory) do
+    simulate_process()
+
     Enum.reduce(books, [], fn book, missing ->
       case Map.get(inventory, book.isbn) > 0 do
         true -> missing
@@ -90,6 +114,8 @@ defmodule BookShop.Logistics.Server do
   end
 
   defp adjust_inventory(books, inventory) do
+    simulate_process()
+
     Enum.reduce(books, inventory, fn book, inventory ->
       Map.update!(inventory, book.isbn, &(&1 - 1))
     end)

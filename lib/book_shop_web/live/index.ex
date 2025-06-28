@@ -22,7 +22,7 @@ defmodule BookShopWeb.Index do
   def handle_event("buy", %{"isbn" => isbn}, socket) do
     customer = %{name: "Peter Parker", billing_address: "my company", shipping_address: "my home"}
     :ok = BookShop.Store.place_order([isbn], customer)
-    {:noreply, socket}
+    {:noreply, socket |> put_flash(:info, "Book ordered")}
   end
 
   def book(assigns) do

@@ -27,6 +27,7 @@ defmodule BookShop.Customer.Server do
 
   def handle_info({:books_shipped, %{books: books, customer: state} = parcel}, state) do
     Logger.info("#{state.name} received #{inspect(books)}")
+    simulate_process()
     Accounting.pay_invoice(parcel.order_id, parcel.price)
     {:noreply, state}
   end

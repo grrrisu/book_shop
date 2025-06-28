@@ -8,7 +8,8 @@
 import Config
 
 config :book_shop,
-  generators: [timestamp_type: :utc_datetime]
+  generators: [timestamp_type: :utc_datetime],
+  process_time: 500
 
 # Configures the endpoint
 config :book_shop, BookShopWeb.Endpoint,
