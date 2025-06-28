@@ -21,6 +21,7 @@ defmodule BookShopWeb.Router do
     live "/store", Store, :index
     live "/statistics", Statistics, :index
     live "/monitoring", Monitoring, :index
+    live "/tracing/:id", Tracing, :index
   end
 
   # Other scopes may use custom stacks.

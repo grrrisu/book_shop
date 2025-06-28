@@ -12,6 +12,11 @@ defmodule BookShopWeb.Store do
      |> stream(:orders, [], at: 0, limit: -5)}
   end
 
+  def handle_info({:incoming_order, order}, socket) do
+    order = Map.put_new(order, :event, :incoming_order)
+    {:noreply, socket |> stream_insert(:orders, order, at: 0)}
+  end
+
   def handle_info({:order_placed, order}, socket) do
     order = Map.put_new(order, :event, :order_placed)
     {:noreply, socket |> stream_insert(:orders, order, at: 0)}
@@ -24,6 +29,11 @@ defmodule BookShopWeb.Store do
 
   def handle_info({:books_shipped, order}, socket) do
     order = Map.put_new(order, :event, :books_shipped)
+    {:noreply, socket |> stream_insert(:orders, order, at: 0)}
+  end
+
+  def handle_info({:payment_received, order}, socket) do
+    order = Map.put_new(order, :event, :payment_received)
     {:noreply, socket |> stream_insert(:orders, order, at: 0)}
   end
 
@@ -42,12 +52,18 @@ defmodule BookShopWeb.Store do
           <:col :let={{_, order}} label="Customer">{order.customer.name}</:col>
           <:col :let={{_, order}} label="Books">{books_list(order)}</:col>
           <:col :let={{_, order}} label="Total Price">{Map.get(order, :price)}</:col>
+          <:action :let={{_, order}}>
+            <.link navigate={~p"/tracing/#{order.order_id}"} class="btn btn-secondary" target="_blank">
+              Trace
+            </.link>
+          </:action>
         </.table>
       </div>
     </Layouts.app>
     """
   end
 
+  @spec books_list(any()) :: binary()
   def books_list(%{books: books}) do
     Enum.map(books, & &1.name)
     |> Enum.join(", ")

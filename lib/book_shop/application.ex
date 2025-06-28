@@ -11,6 +11,7 @@ defmodule BookShop.Application do
       {DNSCluster, query: Application.get_env(:book_shop, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: BookShop.PubSub},
       {DynamicSupervisor, name: BookShop.CustomerSupervisor, strategy: :one_for_one},
+      BookShop.Tracing.Server,
       BookShop.Supplier.Server,
       BookShop.Store.Server,
       BookShop.Logistics.Server,

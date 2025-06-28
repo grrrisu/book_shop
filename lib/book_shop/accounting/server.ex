@@ -2,6 +2,7 @@ defmodule BookShop.Accounting.Server do
   use GenServer
 
   import BookShop.Helper
+  import BookShop.Tracing
 
   require Logger
 
@@ -25,6 +26,7 @@ defmodule BookShop.Accounting.Server do
 
   def handle_info({:order_placed, order}, %{open: open} = state) do
     Logger.info("Accounting received order #{inspect(order.books)}")
+    trace(order.order_id, "Accounting", "handle_order_placed")
 
     invoice = %{
       order_id: order.order_id,
@@ -32,7 +34,9 @@ defmodule BookShop.Accounting.Server do
       customer: order.customer
     }
 
-    broadcast_event({:invoice_created, invoice})
+    simulate_process()
+
+    broadcast_event({:invoice_created, "Accounting", invoice})
     {:noreply, %{state | open: Map.put_new(open, order.order_id, invoice)}}
   end
 
@@ -56,7 +60,7 @@ defmodule BookShop.Accounting.Server do
 
   def handle_call({:incoming_payment, order_id, price}, _from, state) do
     %{price: ^price, customer: customer} = Map.get(state.open, order_id)
-    broadcast_event({:payment_received, customer})
+    broadcast_event({:payment_received, "Accounting", %{customer: customer, order_id: order_id}})
 
     {:reply, :ok,
      %{state | balance: state.balance + price, open: Map.delete(state.open, order_id)}}

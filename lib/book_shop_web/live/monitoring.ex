@@ -13,7 +13,7 @@ defmodule BookShopWeb.Monitoring do
 
   def attach_telemetry do
     :telemetry.attach_many(
-      "monitoring-telemetry",
+      "monitoring-telemetry-#{inspect(self())}",
       [[:book_shop, :logistics, :stats], [:book_shop, :accounting, :balance]],
       &__MODULE__.handle_telemetry_event/4,
       %{pid: self()}
@@ -28,7 +28,7 @@ defmodule BookShopWeb.Monitoring do
         {:telemetry_event, %{sum: balance}, %{context: "accounting", time: time}},
         socket
       ) do
-    dbg("Received telemetry event: #{inspect(balance)}")
+    # dbg("Received telemetry event: #{inspect(balance)}")
 
     {:noreply,
      socket
@@ -37,10 +37,10 @@ defmodule BookShopWeb.Monitoring do
   end
 
   def handle_info(
-        {:telemetry_event, stats, %{context: "logistics"}} = msg,
+        {:telemetry_event, stats, %{context: "logistics"}} = _msg,
         socket
       ) do
-    dbg("Received telemetry event: #{inspect(msg)}")
+    # dbg("Received telemetry event: #{inspect(msg)}")
 
     {:noreply, socket |> push_event("update-logistics-chart", stats)}
   end

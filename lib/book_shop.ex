@@ -11,48 +11,53 @@ defmodule BookShop do
 
   alias BookShop.CustomerSupervisor
 
+  require Logger
+
+  @customers [
+    "Alice",
+    "Bob",
+    "Charlie",
+    "Diana",
+    "Eric",
+    "Francisa",
+    "George",
+    "Hannah",
+    "Ian",
+    "Julia",
+    "Kevin",
+    "Laura",
+    "Mike",
+    "Nina",
+    "Oscar",
+    "Paula",
+    "Quentin",
+    "Rachel",
+    "Steve",
+    "Tina",
+    "Ursula",
+    "Victor",
+    "Wendy",
+    "Xander",
+    "Yara",
+    "Zoe"
+  ]
+
   def run_demo do
     # Start the application
     Application.ensure_all_started(:book_shop)
 
-    Enum.map(
-      [
-        "Alice",
-        "Bob",
-        "Charlie",
-        "Diana",
-        "Eric",
-        "Francisa",
-        "George",
-        "Hannah",
-        "Ian",
-        "Julia",
-        "Kevin",
-        "Laura",
-        "Mike",
-        "Nina",
-        "Oscar",
-        "Paula",
-        "Quentin",
-        "Rachel",
-        "Steve",
-        "Tina",
-        "Ursula",
-        "Victor",
-        "Wendy",
-        "Xander",
-        "Yara",
-        "Zoe"
-      ],
-      &start_customer/1
-    )
+    @customers
+    |> Enum.take(10)
+    |> Enum.map(&start_customer/1)
     |> Enum.each(fn {:ok, pid} ->
       Customer.buy_books(pid)
     end)
 
-    # Stop the application
-    Process.sleep(60_000)
-    Application.stop(:book_shop)
+    # Stop the application after 5 minutes
+    Process.sleep(300_000)
+    DynamicSupervisor.stop(CustomerSupervisor, :shutdown)
+    Logger.emergency("Shutting down all customers")
+    # Application.stop(:book_shop)
   end
 
   defp start_customer(name) do
