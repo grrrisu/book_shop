@@ -23,10 +23,13 @@ import "phoenix_html"
 import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import topbar from "../vendor/topbar"
-import MonitorHook from "./chart_hook"
+import {MonitorHook, LogisticsHook} from "./chart_hook"
+import AutoDismissHook from "./alert_hook"
 
 Hooks = {
-  Chart: MonitorHook
+  AccountingChart: MonitorHook,
+  LogisticsChart: LogisticsHook,
+  AutoDimissHook: AutoDismissHook
 };
 
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")

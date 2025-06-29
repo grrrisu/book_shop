@@ -1,8 +1,8 @@
 # Evolution of Backend Systems
 
-![The Beginning](./presentation/the_monolith.jpg)
+<!-- ![The Beginning](./presentation/the_monolith.jpg)
 
-<div style="margin: 500px 0;"></div>
+<div style="margin: 500px 0;"></div> -->
 
 ## The Monolith
 

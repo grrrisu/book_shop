@@ -24,7 +24,7 @@ defmodule BookShop.Logistics.Server do
       Store.list_books() |> Enum.reduce(%{}, &Map.put_new(&2, &1.isbn, @starting_inventory))
 
     subscribe()
-    Logger.info("BookShop.Logistics.Server started and subscribed to store:events")
+    Logger.warning("BookShop.Logistics.Server started and subscribed to store:events")
     {:noreply, %{state | inventory: inventory}}
   end
 
@@ -52,7 +52,7 @@ defmodule BookShop.Logistics.Server do
           Process.send_after(
             self(),
             event,
-            Application.get_env(:book_shop, :process_time) || 1_000
+            Application.get_env(:book_shop, :process_time, 1_000)
           )
 
           ready
@@ -82,7 +82,7 @@ defmodule BookShop.Logistics.Server do
     {:noreply, state}
   end
 
-  defp handle_order_placed(%{order_id: order_id, books: books} = event, state) do
+  defp handle_order_placed(%{order_id: order_id, books: books} = payload, state) do
     with [] <- check_inventory(books, state.inventory),
          inventory <- adjust_inventory(books, state.inventory),
          ready <- Map.put_new(state.ready, order_id, books) do
@@ -95,7 +95,7 @@ defmodule BookShop.Logistics.Server do
         Process.send_after(
           self(),
           {:order_placed, payload},
-          Application.get_env(:book_shop, :process_time) || 1_000
+          Application.get_env(:book_shop, :process_time, 1_000)
         )
 
         state
@@ -123,11 +123,14 @@ defmodule BookShop.Logistics.Server do
 
   # Command handlers
 
-  def handle_call(:get_stats, _from, state) do
-    {:reply,
-     %{
-       inventory: Enum.reduce(state.inventory, 0, fn {_, quantity}, sum -> sum + quantity end),
-       ready: Enum.count(state.ready)
-     }, state}
+  def handle_call(:get_stats, from, state) do
+    Task.start(fn ->
+      GenServer.reply(from, %{
+        inventory: Enum.reduce(state.inventory, 0, fn {_, quantity}, sum -> sum + quantity end),
+        ready: Enum.count(state.ready)
+      })
+    end)
+
+    {:noreply, state}
   end
 end
