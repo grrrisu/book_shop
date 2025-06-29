@@ -12,7 +12,9 @@ defmodule BookShopWeb.Tracing do
       Phoenix.PubSub.subscribe(BookShop.PubSub, "store:tracing")
     end
 
-    {:ok, socket |> assign(trace: trace, id: params["id"] |> String.to_integer())}
+    {:ok,
+     socket
+     |> assign(page_title: "Tracing", trace: trace, id: params["id"] |> String.to_integer())}
   end
 
   def handle_info({:trace_added, trace}, socket) do

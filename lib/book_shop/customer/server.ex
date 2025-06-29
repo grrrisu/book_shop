@@ -19,7 +19,7 @@ defmodule BookShop.Customer.Server do
 
   def handle_continue(_continue_arg, state) do
     subscribe()
-    Logger.info("BookShop.Customer.Server started and subscribed to store:events")
+    Logger.warning("BookShop.Customer.Server started and subscribed to store:events")
     {:noreply, state}
   end
 

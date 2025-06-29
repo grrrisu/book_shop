@@ -3,7 +3,7 @@ defmodule BookShopWeb.Index do
 
   def mount(_params, _session, socket) do
     books = BookShop.Store.list_books()
-    {:ok, socket |> assign(:books, books)}
+    {:ok, socket |> assign(books: books, page_title: "Book Shop")}
   end
 
   def render(assigns) do

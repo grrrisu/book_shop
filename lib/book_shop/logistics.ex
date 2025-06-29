@@ -6,6 +6,6 @@ defmodule BookShop.Logistics do
   alias BookShop.Logistics.Server
 
   def get_stats() do
-    GenServer.call(Server, :get_stats)
+    GenServer.call(Server, :get_stats, 10_000)
   end
 end

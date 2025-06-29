@@ -1,8 +1,8 @@
 # Evolution of Web Applications
 
-![The Beginning](./presentation/the_beginning.png)
+<!-- ![The Beginning](./presentation/the_beginning.png)
 
-<div style="margin: 500px 0;"></div>
+<div style="margin: 500px 0;"></div> -->
 
 ## The early days (1990s)
 
@@ -56,7 +56,7 @@
 
 ## JAM Stack (2015)
 
-![Static Files](./doc/web_6.drawio.png)
+![Static Files](./presentation/web_6.drawio.png)
 
 **Key Characteristics:**
 - Pre-built markup at build time

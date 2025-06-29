@@ -34,6 +34,23 @@ defmodule BookShopWeb.Layouts do
     <header class="navbar px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between w-full">
         <h1 class="text-xl font-bold">Book Shop</h1>
+        <nav class="flex items-center space-x-4">
+          <.link navigate={~p"/"} class="link link-hover hover:link-primary">Home</.link>
+          <.link navigate={~p"/store"} class="link link-hover hover:link-primary">Orders</.link>
+          <.link navigate={~p"/statistics"} class="link link-hover hover:link-primary">
+            Statistics
+          </.link>
+          <.link navigate={~p"/dev/dashboard"} class="link link-hover hover:link-primary">
+            Dashboard
+          </.link>
+          <.link navigate={~p"/monitoring"} class="link link-hover hover:link-primary">
+            Monitoring
+          </.link>
+
+          <.link navigate={~p"/chaos"} class="link link-hover hover:link-primary">
+            Chaos
+          </.link>
+        </nav>
         <.theme_toggle />
       </div>
     </header>

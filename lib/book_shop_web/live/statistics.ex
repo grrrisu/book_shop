@@ -10,8 +10,9 @@ defmodule BookShopWeb.Statistics do
 
     {:ok,
      socket
-     |> assign(incoming: 0, ready: 0, shipped: 0)
-     |> assign(balance: 0, open: 0, paid: 0)}
+     |> assign(:page_title, "Statistics")
+     |> assign(incoming: 0, supplier: 0, shipped: 0)
+     |> assign(invoice: 0, paid: 0, customers: 0)}
   end
 
   def handle_info({:order_placed, _order}, socket) do
@@ -19,36 +20,23 @@ defmodule BookShopWeb.Statistics do
   end
 
   def handle_info({:supplier_shipped, _order}, socket) do
-    {:noreply, socket |> assign(:balance, balance())}
+    {:noreply, socket |> update(:supplier, &(&1 + 1)) |> update(:paid, &(&1 + 1))}
   end
 
   def handle_info({:books_shipped, _order}, socket) do
-    {:noreply, socket |> update(:shipped, &(&1 + 1)) |> update(:ready, &(&1 - 1))}
-  end
-
-  def handle_info({:_xx, _order}, socket) do
-    {:noreply, socket |> update(:incoming, &(&1 + 1))}
+    {:noreply, socket |> update(:shipped, &(&1 + 1))}
   end
 
   def handle_info({:invoice_created, _order}, socket) do
-    {:noreply,
-     socket
-     |> update(:open, &(&1 + 1))
-     |> update(:ready, &(&1 + 1))
-     |> update(:incoming, &(&1 - 1))}
+    {:noreply, socket |> update(:invoice, &(&1 + 1))}
   end
 
   def handle_info({:payment_received, _order}, socket) do
-    {:noreply,
-     socket |> assign(balance: balance()) |> update(:paid, &(&1 + 1)) |> update(:open, &(&1 - 1))}
+    {:noreply, socket |> update(:customers, &(&1 + 1))}
   end
 
   def handle_info(_msg, socket) do
     {:noreply, socket}
-  end
-
-  defp balance() do
-    BookShop.Accounting.get_balance() / 100
   end
 
   def render(assigns) do
@@ -59,14 +47,14 @@ defmodule BookShopWeb.Statistics do
         <h3 class="font-bold mb-2">Logistics</h3>
         <div class="stats shadow mb-4">
           <.stat number={@incoming} title="Incoming Orders" icon="hero-inbox-arrow-down" />
-          <.stat number={@ready} title="Parcels ready" icon="hero-archive-box" />
-          <.stat number={@shipped} title="Shipped" icon="hero-flag" />
+          <.stat number={@supplier} title="Supplier Deliveries" icon="hero-archive-box" />
+          <.stat number={@shipped} title="Books Shipped" icon="hero-truck" />
         </div>
         <h3 class="font-bold mb-2">Accounting</h3>
         <div class="stats shadow mb-4">
-          <.stat number={@balance} title="Balance" icon="hero-currency-euro" />
-          <.stat number={@open} title="Open invoices" icon="hero-envelope" />
-          <.stat number={@paid} title="Paid invoices" icon="hero-credit-card" />
+          <.stat number={@invoice} title="Invoices created" icon="hero-envelope" />
+          <.stat number={@paid} title="Outgoing" icon="hero-arrow-up-on-square-stack" />
+          <.stat number={@customers} title="Incoming" icon="hero-arrow-down-on-square-stack" />
         </div>
       </div>
     </Layouts.app>

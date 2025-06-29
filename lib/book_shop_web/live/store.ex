@@ -8,6 +8,7 @@ defmodule BookShopWeb.Store do
 
     {:ok,
      socket
+     |> assign(:page_title, "Order Overview")
      |> stream_configure(:orders, dom_id: &"order-#{&1.order_id}")
      |> stream(:orders, [], at: 0, limit: -5)}
   end

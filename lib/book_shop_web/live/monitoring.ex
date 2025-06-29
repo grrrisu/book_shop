@@ -8,7 +8,7 @@ defmodule BookShopWeb.Monitoring do
       attach_telemetry()
     end
 
-    {:ok, socket |> assign(balance: 0)}
+    {:ok, socket |> assign(balance: 0, inventory: 0, ready: 0, page_title: "Monitoring")}
   end
 
   def attach_telemetry do
@@ -28,8 +28,6 @@ defmodule BookShopWeb.Monitoring do
         {:telemetry_event, %{sum: balance}, %{context: "accounting", time: time}},
         socket
       ) do
-    # dbg("Received telemetry event: #{inspect(balance)}")
-
     {:noreply,
      socket
      |> assign(balance: balance / 100)
@@ -37,12 +35,17 @@ defmodule BookShopWeb.Monitoring do
   end
 
   def handle_info(
-        {:telemetry_event, stats, %{context: "logistics"}} = _msg,
+        {:telemetry_event, stats, %{context: "logistics", time: time}},
         socket
       ) do
-    # dbg("Received telemetry event: #{inspect(msg)}")
-
-    {:noreply, socket |> push_event("update-logistics-chart", stats)}
+    {:noreply,
+     socket
+     |> assign(ready: stats.ready, inventory: stats.inventory)
+     |> push_event("update-logistics-chart", %{
+       ready: stats.ready,
+       inventory: stats.inventory,
+       time: time
+     })}
   end
 
   def render(assigns) do
@@ -50,15 +53,26 @@ defmodule BookShopWeb.Monitoring do
     <Layouts.app flash={@flash}>
       <div class="flex flex-col items-center">
         <h2 class="text-2xl font-bold mb-4">Monitoring</h2>
-        <div class="w-full flex justify-center">
-          <div class="card w-200 bg-base-100 card-xl shadow-sm">
+        <div class="flex w-2/3 mb-4">
+          <div class="w-2/3">
+            <.chart title="Accounting" name="accounting-balance" hook="AccountingChart" />
+          </div>
+          <div class="card w-1/3 bg-base-100 card-xl shadow-sm">
             <div class="card-body">
-              <h2 class="card-title">Accounting</h2>
-              <.chart title="Balance" name="accounting-balance" hook="Chart" />
+              <.stat number={@balance} title="Balance" icon="hero-currency-euro" />
             </div>
           </div>
-          <div class="stats shadow mb-4">
-            <.stat number={@balance} title="Balance" icon="hero-currency-euro" />
+        </div>
+
+        <div class="flex w-2/3">
+          <div class="w-2/3">
+            <.chart title="Logistics" name="logistics-stats" hook="LogisticsChart" />
+          </div>
+          <div class="card w-1/3 bg-base-100 card-xl shadow-sm">
+            <div class="card-body">
+              <.stat number={@inventory} title="Inventory" icon="hero-queue-list" />
+              <.stat number={@ready} title="Ready" icon="hero-clipboard-document-check" />
+            </div>
           </div>
         </div>
       </div>

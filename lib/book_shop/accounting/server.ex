@@ -18,7 +18,7 @@ defmodule BookShop.Accounting.Server do
 
   def handle_continue(_continue_arg, state) do
     subscribe()
-    Logger.info("BookShop.Accounting.Server started and subscribed to store:events")
+    Logger.warning("BookShop.Accounting.Server started and subscribed to store:events")
     {:noreply, state}
   end
 
@@ -59,10 +59,18 @@ defmodule BookShop.Accounting.Server do
   end
 
   def handle_call({:incoming_payment, order_id, price}, _from, state) do
-    %{price: ^price, customer: customer} = Map.get(state.open, order_id)
-    broadcast_event({:payment_received, "Accounting", %{customer: customer, order_id: order_id}})
+    case Map.get(state.open, order_id) do
+      nil ->
+        Logger.warning("Accounting received payment for unknown order #{order_id}")
+        {:reply, {:error, :unknown_order}, state}
 
-    {:reply, :ok,
-     %{state | balance: state.balance + price, open: Map.delete(state.open, order_id)}}
+      %{price: expected_price, customer: customer} when expected_price == price ->
+        broadcast_event(
+          {:payment_received, "Accounting", %{customer: customer, order_id: order_id}}
+        )
+
+        {:reply, :ok,
+         %{state | balance: state.balance + price, open: Map.delete(state.open, order_id)}}
+    end
   end
 end
