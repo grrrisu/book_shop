@@ -40,6 +40,8 @@ defmodule BookShop.Logistics.Server do
         {:invoice_created, %{order_id: order_id} = invoice} = event,
         %{ready: ready} = state
       ) do
+    trace(order_id, "Logistics", "handle_invoice_created")
+
     ready =
       case Map.get(state.ready, order_id) do
         nil ->

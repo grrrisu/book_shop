@@ -21,7 +21,7 @@ flowchart TB
     %% Read Models/Views (Green)
     BookCatalog[📗 Book Catalog]
     Inventory[📗 Inventory Levels]
-    OpenInvoices[📗 Open Invoices]
+    BalanceAndInvoices[📗 Balance and Open Invoices]
     CustomerList[📗 Customer List]
     
     %% Aggregates/Bounded Contexts (Yellow)
@@ -32,6 +32,7 @@ flowchart TB
     SupplierCtx[🟡 Supplier Context]
     
     %% Policies/Business Rules (Purple)
+    ValidateOrder[🟣 Validate Order Policy]
     CheckInventory[🟣 Check Inventory Policy]
     AutoReorder[🟣 Auto Reorder Policy]
     TaxCalculation[🟣 Tax Calculation Policy]
@@ -40,11 +41,12 @@ flowchart TB
 
     
     %% Flow
-    Customer --> BuyBooks
-    BuyBooks --> Store
+    BuyBooks --> Customer
+    Customer --> PlaceOrder
+    PlaceOrder --> Store
     Store --> BookCatalog
-    Store --> PlaceOrder
-    PlaceOrder --> OrderPlaced
+    Store --> ValidateOrder
+    ValidateOrder --> OrderPlaced
     
     OrderPlaced --> Logistics
     OrderPlaced --> Accounting
@@ -62,8 +64,9 @@ flowchart TB
     
     %% Accounting Flow
     Accounting --> TaxCalculation
+    Accounting --> BalanceAndInvoices
     TaxCalculation --> InvoiceCreated
-    InvoiceCreated --> OpenInvoices
+    InvoiceCreated --> BalanceAndInvoices
     InvoiceCreated --> Logistics
     
     %% Shipping Flow
@@ -92,8 +95,8 @@ flowchart TB
     
     class BuyBooks,PlaceOrder,PayInvoice,OrderSupplier command
     class OrderPlaced,InvoiceCreated,BooksShipped,PaymentReceived,SupplierShipped,NewsletterSent event
-    class BookCatalog,Inventory,OpenInvoices,CustomerList readmodel
+    class BookCatalog,Inventory,BalanceAndInvoices,CustomerList readmodel
     class Store,Logistics,Accounting,Marketing,SupplierCtx aggregate
-    class CheckInventory,AutoReorder,TaxCalculation,NewsletterPolicy policy
+    class ValidateOrder,CheckInventory,AutoReorder,TaxCalculation,NewsletterPolicy policy
     class Customer,Supplier actor
 ```

@@ -52,7 +52,7 @@ defmodule BookShopWeb.Store do
           <:col :let={{_, order}} label="Event">{order.event}</:col>
           <:col :let={{_, order}} label="Customer">{order.customer.name}</:col>
           <:col :let={{_, order}} label="Books">{books_list(order)}</:col>
-          <:col :let={{_, order}} label="Total Price">{Map.get(order, :price)}</:col>
+          <:col :let={{_, order}} label="Total Price">{Map.get(order, :price, 0) / 100}</:col>
           <:action :let={{_, order}}>
             <.link navigate={~p"/tracing/#{order.order_id}"} class="btn btn-secondary" target="_blank">
               Trace

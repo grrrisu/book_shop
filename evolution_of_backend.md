@@ -28,6 +28,6 @@
 - Isolate Data instead of Functionality
 - Share instead of Extract
 
-## Event Driven (2015)
+## Event Driven
 
 ![Static Files](./presentation/backend_4.drawio.png)

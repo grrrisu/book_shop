@@ -33,8 +33,8 @@ flowchart TD
     NewsletterSent([📧 Newsletter Sent])
     
     %% Parallel Gateway
-    ParallelStart{{+}}
-    ParallelEnd{{+}}
+    ParallelStart{{ ⛛ }}
+    ParallelEnd{{ ⛛ }}
     
     %% Timer Events
     NewsletterTimer([⏰ Newsletter Timer])
